@@ -1,0 +1,42 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity registrador_d is
+    PORT (
+        reset   : in STD_LOGIC;        -- Reset síncrono
+        clk     : in STD_LOGIC;        -- Sinal de clock
+        entrada : in STD_LOGIC;        -- Entrada de dados
+        enable  : in STD_LOGIC;        -- Controle: 1 = Esquerda, 0 = Direita
+        q1, q2, q3 : out STD_LOGIC     -- Saídas dos flip-flops
+    );
+end registrador_d;
+
+architecture Behavioral of registrador_d is
+    signal reg : std_logic_vector(2 downto 0) := (others => '0'); -- Sinal interno do registrador
+begin
+
+    process(clk, reset)
+    begin
+        if reset = '1' then
+            reg <= (others => '0'); -- Resetar o registrador
+        elsif rising_edge(clk) then
+            if enable = '1' then
+                -- Deslocar para a esquerda
+                reg(2) <= reg(1);
+                reg(1) <= reg(0);
+                reg(0) <= entrada;
+            else
+                -- Deslocar para a direita
+                reg(0) <= reg(1);
+                reg(1) <= reg(2);
+                reg(2) <= entrada;
+            end if;
+        end if;
+    end process;
+
+    -- Conectar os LEDs às saídas dos flip-flops
+    q1 <= reg(0);
+    q2 <= reg(1);
+    q3 <= reg(2);
+
+end Behavioral;

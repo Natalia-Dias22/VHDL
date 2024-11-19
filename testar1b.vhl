@@ -1,0 +1,65 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_registrador_d is
+-- Não possui portas, pois é apenas para teste.
+end tb_registrador_d;
+
+architecture sim of tb_registrador_d is
+    -- Sinais para conectar ao DUT (Device Under Test)
+    signal clk     : std_logic := '0';
+    signal reset   : std_logic := '0';
+    signal entrada : std_logic := '0';
+    signal enable  : std_logic := '0';
+    signal q1, q2, q3 : std_logic;
+    
+begin
+    -- Instanciação do DUT
+    DUT: entity work.registrador_d
+        port map (
+            clk     => clk,
+            reset   => reset,
+            entrada => entrada,
+            enable  => enable,
+            q1      => q1,
+            q2      => q2,
+            q3      => q3
+        );
+
+    -- Geração do sinal de clock (50 MHz)
+    clk_process: process
+    begin
+        clk <= '0';
+        wait for 10 ns;
+        clk <= '1';
+        wait for 10 ns;
+    end process;
+
+    -- Estímulos para teste
+    stim_proc: process
+    begin
+        -- Aplicar reset
+        reset <= '1';
+        wait for 20 ns;
+        reset <= '0';
+
+        -- Testar deslocamento para a esquerda (enable = 1)
+        enable <= '1';
+        entrada <= '1';  -- Aplicar entrada como '1'
+        wait for 40 ns;
+
+        entrada <= '0';  -- Mudar a entrada
+        wait for 40 ns;
+
+        -- Testar deslocamento para a direita (enable = 0)
+        enable <= '0';
+        entrada <= '1';  -- Aplicar entrada como '1'
+        wait for 40 ns;
+
+        entrada <= '0';  -- Mudar a entrada
+        wait for 40 ns;
+
+        -- Finalizar simulação
+        wait;
+    end process;
+end sim;
