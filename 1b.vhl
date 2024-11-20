@@ -1,42 +1,31 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
 
-entity registrador_d is
-    PORT (
-        reset   : in STD_LOGIC;        -- Reset síncrono
-        clk     : in STD_LOGIC;        -- Sinal de clock
-        entrada : in STD_LOGIC;        -- Entrada de dados
-        enable  : in STD_LOGIC;        -- Controle: 1 = Esquerda, 0 = Direita
-        q1, q2, q3 : out STD_LOGIC     -- Saídas dos flip-flops
+ENTITY flipflopD IS
+    PORT(
+        D_in   : IN std_logic;   -- Entrada de dados
+        clk    : IN std_logic;   -- Clock
+        ENABLE : IN std_logic;   -- Controle de direção do deslocamento
+        D_out  : OUT std_logic_vector(3 DOWNTO 0)  -- Saída de 4 bits
     );
-end registrador_d;
+END flipflopD;
 
-architecture Behavioral of registrador_d is
-    signal reg : std_logic_vector(2 downto 0) := (others => '0'); -- Sinal interno do registrador
-begin
-
-    process(clk, reset)
-    begin
-        if reset = '1' then
-            reg <= (others => '0'); -- Resetar o registrador
-        elsif rising_edge(clk) then
-            if enable = '1' then
-                -- Deslocar para a esquerda
-                reg(2) <= reg(1);
-                reg(1) <= reg(0);
-                reg(0) <= entrada;
-            else
-                -- Deslocar para a direita
-                reg(0) <= reg(1);
-                reg(1) <= reg(2);
-                reg(2) <= entrada;
-            end if;
-        end if;
-    end process;
-
-    -- Conectar os LEDs às saídas dos flip-flops
-    q1 <= reg(0);
-    q2 <= reg(1);
-    q3 <= reg(2);
-
-end Behavioral;
+ARCHITECTURE behavioral OF flipflopD IS
+    SIGNAL shift_reg : std_logic_vector(3 DOWNTO 0) := "0000";  -- Registrador de deslocamento de 4 bits
+BEGIN
+    PROCESS(clk)
+    BEGIN
+        -- Verifica borda de subida do clock
+        IF (RISING_EDGE(clk)) THEN
+            IF ENABLE = '1' THEN
+                -- Deslocamento para a esquerda (shift left)
+                shift_reg <= shift_reg(2 DOWNTO 0) & D_in;  -- Desloca para a esquerda e insere D_in na posição LSB
+            ELSE
+                -- Deslocamento para a direita (shift right)
+                shift_reg <= D_in & shift_reg(3 DOWNTO 1);  -- Desloca para a direita e insere D_in na posição MSB
+            END IF;
+        END IF;
+        
+        D_out <= shift_reg;  -- Atualiza a saída com o valor do registrador de deslocamento
+    END PROCESS;
+END behavioral;
